@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>SHOW – Pure Abbildung</title>
+
+<style>
+  body {
+    background:#000;
+    color:#0f0;
+    font-family:monospace;
+    padding:40px;
+  }
+  .symbol {
+    font-size:100px;
+    text-align:center;
+    margin-bottom:40px;
+  }
+  .box {
+    border:1px solid #0f0;
+    padding:20px;
+    margin-bottom:30px;
+  }
+  .label {
+    color:#6f6;
+    font-size:18px;
+  }
+  .value {
+    color:#0f0;
+    font-size:20px;
+    margin-top:5px;
+    white-space:pre-wrap;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="symbol">∎ω</div>
+
+<div class="box">
+  <div class="label">SHOW – Figur</div>
+  <div class="value" id="figur">lade Figur…</div>
+</div>
+
+<div class="box">
+  <div class="label">SHOW – Echo</div>
+  <div class="value" id="echo">lade Echo…</div>
+</div>
+
+<div class="box">
+  <div class="label">OUR – Kombination</div>
+  <div class="value" id="our">lade OUR…</div>
+</div>
+
+<script type="module">
+
+  import { SHOW_UNIJ } from "./SH.vector";
+  import { OUR } from "./ANKER.js";
+
+  // Beispiel-Figur (du kannst später echte Figuren laden)
+  const figur = {
+    form: "raw",
+    axis: 12,
+    orbit: 4,
+    pulse: "good",
+    layer: "L1",
+    symbol: "∎",
+    cause: "input",
+    effect: "reflection"
+  };
+
+  // SHOW erzeugen
+  const show = SHOW_UNIJ(figur);
+
+  // OUR erzeugen
+  const our = OUR(figur.axis, figur.orbit);
+
+  // Ausgabe
+  document.getElementById("figur").innerText =
+    JSON.stringify(show.figur, null, 2);
+
+  document.getElementById("echo").innerText =
+    JSON.stringify(show.echo, null, 2);
+
+  document.getElementById("our").innerText =
+    JSON.stringify(our, null, 2);
+
+</script>
+
+</body>
+</html>
