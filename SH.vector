@@ -1,0 +1,24 @@
+export function SHOW_UNIJ(figur){
+  const t = Date.now();
+
+  return {
+    identity: "∎ω",
+    figur: figur,
+    layer: figur.layer || null,
+    symbol: figur.symbol || "∎",
+    cause: figur.cause || null,
+    effect: figur.effect || null,
+
+    echo: {
+      form: figur.form,
+      axis: figur.axis,
+      orbit: figur.orbit,
+      pulse: figur.pulse,
+      time: t
+    },
+
+    unchanged: true,
+    visible: true,
+    timestamp: t
+  };
+}
