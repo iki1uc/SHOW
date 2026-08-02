@@ -1,0 +1,18 @@
+export function SHOW_UNIJ(figur){
+  return {
+    identity: "∎ω",
+    figur: figur,
+    layer: figur.layer || null,
+    symbol: figur.symbol || "∎",
+    cause: figur.cause || null,
+    effect: figur.effect || null,
+    echo: {
+      form: figur.form,
+      axis: figur.axis,
+      orbit: figur.orbit,
+      pulse: figur.pulse
+    },
+    unchanged: true,
+    visible: true
+  };
+}
