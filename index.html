@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>SHOW – Pure Abbildung</title>
+<title>SHOW – MUST System Monitor</title>
 
 <style>
   body {
@@ -29,7 +29,10 @@
     color:#0f0;
     font-size:20px;
     margin-top:5px;
-    white-space:pre-wrap;
+  }
+  .video-wrap {
+    margin-bottom:40px;
+    text-align:center;
   }
 </style>
 </head>
@@ -38,53 +41,90 @@
 
 <div class="symbol">∎ω</div>
 
-<div class="box">
-  <div class="label">SHOW – Figur</div>
-  <div class="value" id="figur">lade Figur…</div>
+<div class="video-wrap">
+  <video 
+    controls 
+    preload="metadata" 
+    width="640"
+    poster="show_poster.png"
+    playsinline
+    loading="lazy">
+    
+    <source src="show_video.webm" type="video/webm">
+    <source src="show_video.mp4" type="video/mp4">
+
+    <p>Video wird nicht unterstützt.</p>
+  </video>
 </div>
 
 <div class="box">
-  <div class="label">SHOW – Echo</div>
-  <div class="value" id="echo">lade Echo…</div>
+  <div class="label">MUST – Räume</div>
+  <div class="value" id="must">Lade MUST_MAP…</div>
 </div>
 
 <div class="box">
-  <div class="label">OUR – Kombination</div>
-  <div class="value" id="our">lade OUR…</div>
+  <div class="label">RAW – Ursprung</div>
+  <div class="value" id="raw">Lade ANKER.raw…</div>
+</div>
+
+<div class="box">
+  <div class="label">Schicht 4 – mathematisch</div>
+  <div class="value" id="layer4">Lade schicht-aufgabe-4.csv…</div>
+</div>
+
+<div class="box">
+  <div class="label">Schicht 6 – physikalisch</div>
+  <div class="value" id="layer6">Lade schicht-aufgabe-6.csv…</div>
+</div>
+
+<div class="box">
+  <div class="label">UNIFIED – Gleichung</div>
+  <div class="value" id="unified">Initialisiere…</div>
 </div>
 
 <script type="module">
 
-  import { SHOW_UNIJ } from "./SH.vector";
-  import { OUR } from "./ANKER.js";
+  import { MUST, AUTO, PIPE } from "./UNIFIED_CORE.js";
 
-  // Beispiel-Figur (du kannst später echte Figuren laden)
-  const figur = {
-    form: "raw",
+  // MUST anzeigen
+  document.getElementById("must").innerText =
+    Object.keys(MUST).join(" · ");
+
+  // ANKER.raw laden
+  fetch("./ANKER.raw")
+    .then(r => r.text())
+    .then(t => {
+      document.getElementById("raw").innerText = t.slice(0, 200) + " …";
+    });
+
+  // Schicht 4 laden
+  fetch("./schicht-aufgabe-4.csv")
+    .then(r => r.text())
+    .then(t => {
+      document.getElementById("layer4").innerText = t.replace(/\n/g, " · ");
+    });
+
+  // Schicht 6 laden
+  fetch("./schicht-aufgabe-6.csv")
+    .then(r => r.text())
+    .then(t => {
+      document.getElementById("layer6").innerText = t.replace(/\n/g, " · ");
+    });
+
+  // UNIFIED Beispiel
+  const sample = {
+    room: "ANKER",
     axis: 12,
     orbit: 4,
     pulse: "good",
-    layer: "L1",
-    symbol: "∎",
-    cause: "input",
-    effect: "reflection"
+    tick: 33
   };
 
-  // SHOW erzeugen
-  const show = SHOW_UNIJ(figur);
-
-  // OUR erzeugen
-  const our = OUR(figur.axis, figur.orbit);
-
-  // Ausgabe
-  document.getElementById("figur").innerText =
-    JSON.stringify(show.figur, null, 2);
-
-  document.getElementById("echo").innerText =
-    JSON.stringify(show.echo, null, 2);
-
-  document.getElementById("our").innerText =
-    JSON.stringify(our, null, 2);
+  AUTO(sample).then(res => {
+    const evo = PIPE(res, 3);
+    document.getElementById("unified").innerText =
+      JSON.stringify(evo, null, 2);
+  });
 
 </script>
 
