@@ -227,10 +227,10 @@
 const canvas = document.getElementById('showCanvas');
 const ctx = canvas.getContext('2d');
 let running = true;
+let animationId = null;
 let time = 0;
 let showMode = 'show';
 let warb10Active = false;
-let warb10Value = 0;
 
 function resizeCanvas() {
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -277,57 +277,36 @@ function SHOW_UNIJ(figur) {
     };
 }
 
-// ─── WARB10 ──────────────────────────────────────────────────
-function WARB10() {
-    warb10Active = !warb10Active;
-    if (warb10Active) {
-        warb10Value = 10;
-        document.getElementById('warbStatus').textContent = '⚡ AKTIV';
-        document.getElementById('warbStatus').style.color = '#ffaa00';
-        document.getElementById('btnWarb10').style.borderColor = '#ffaa00';
-        document.getElementById('btnWarb10').style.color = '#ffaa00';
-        // WARB10-Effekt: Figur pulsiert stärker
-        currentFigur.pulse = 1.2;
-        console.log('⚡ WARB10 AKTIVIERT');
-    } else {
-        warb10Value = 0;
-        document.getElementById('warbStatus').textContent = '—';
-        document.getElementById('warbStatus').style.color = '#445555';
-        document.getElementById('btnWarb10').style.borderColor = 'rgba(255,255,255,0.02)';
-        document.getElementById('btnWarb10').style.color = '#668888';
-        currentFigur.pulse = 0.5;
-        console.log('⚡ WARB10 DEAKTIVIERT');
-    }
-    updateShow();
-}
-
 // ─── UPDATE SHOW ─────────────────────────────────────────────
 function updateShow() {
     const show = SHOW_UNIJ(currentFigur);
     currentEcho = show.echo;
 
     document.getElementById('figurValue').textContent = currentFigur.name;
-    document.getElementById('figurValue').style.color = 
-        currentFigur.form === 'circle' ? '#88ddbb' :
-        currentFigur.form === 'square' ? '#ffaa00' :
-        currentFigur.form === 'triangle' ? '#ff66ff' :
-        currentFigur.form === 'line' ? '#00ff88' :
-        currentFigur.form === 'point' ? '#ffffff' :
-        currentFigur.form === 'spiral' ? '#ff88ff' :
-        currentFigur.form === 'star' ? '#ffdd44' :
-        currentFigur.form === 'wave' ? '#44ddff' : '#88ddbb';
-
+    const colorMap = {
+        'circle': '#88ddbb',
+        'square': '#ffaa00',
+        'triangle': '#ff66ff',
+        'line': '#00ff88',
+        'point': '#ffffff',
+        'spiral': '#ff88ff',
+        'star': '#ffdd44',
+        'wave': '#44ddff'
+    };
+    document.getElementById('figurValue').style.color = colorMap[currentFigur.form] || '#88ddbb';
     document.getElementById('causeValue').textContent = currentFigur.cause;
     document.getElementById('effectValue').textContent = currentFigur.effect;
     document.getElementById('echoValue').textContent = `${currentFigur.symbol} · ${currentFigur.form}`;
-
     document.getElementById('showStatus').textContent = 'aktiv';
     document.getElementById('echoStatus').textContent = `✓ ${currentFigur.form}`;
 }
 
 // ─── RENDER ──────────────────────────────────────────────────
 function renderShow(timestamp) {
-    if (!running) return;
+    if (!running) {
+        animationId = requestAnimationFrame(renderShow);
+        return;
+    }
     time = timestamp || Date.now();
     const w = canvas.width, h = canvas.height;
     const cx = w/2, cy = h/2;
@@ -346,7 +325,6 @@ function renderShow(timestamp) {
     const pulse = fig.pulse + (warb10Active ? 0.4 : 0) + Math.sin(time / 2000) * 0.2;
     const size = maxDim * (0.15 + pulse * 0.15);
     const rot = time / 3000 * fig.axis;
-    const orbit = fig.orbit * 10;
 
     // Echo-Kreise
     ctx.strokeStyle = 'rgba(255,255,255,0.02)';
@@ -374,14 +352,17 @@ function renderShow(timestamp) {
     ctx.translate(cx, cy);
     ctx.rotate(rot);
 
-    const color = fig.form === 'circle' ? '#88ddbb' :
-        fig.form === 'square' ? '#ffaa00' :
-        fig.form === 'triangle' ? '#ff66ff' :
-        fig.form === 'line' ? '#00ff88' :
-        fig.form === 'point' ? '#ffffff' :
-        fig.form === 'spiral' ? '#ff88ff' :
-        fig.form === 'star' ? '#ffdd44' :
-        fig.form === 'wave' ? '#44ddff' : '#88ddbb';
+    const colorMap = {
+        'circle': '#88ddbb',
+        'square': '#ffaa00',
+        'triangle': '#ff66ff',
+        'line': '#00ff88',
+        'point': '#ffffff',
+        'spiral': '#ff88ff',
+        'star': '#ffdd44',
+        'wave': '#44ddff'
+    };
+    const color = colorMap[fig.form] || '#88ddbb';
 
     ctx.shadowColor = color + '44';
     ctx.shadowBlur = 30 + (warb10Active ? 30 : 0);
@@ -478,7 +459,33 @@ function renderShow(timestamp) {
     document.getElementById('timeStatus').textContent =
         `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-    requestAnimationFrame(renderShow);
+    animationId = requestAnimationFrame(renderShow);
+}
+
+// ─── START ────────────────────────────────────────────────────
+function startShow() {
+    running = true;
+    document.getElementById('btnStart').classList.add('active');
+    document.getElementById('showStatus').textContent = 'aktiv';
+    if (!animationId) renderShow(Date.now());
+    console.log('▶ SHOW gestartet');
+}
+
+// ─── STOP ─────────────────────────────────────────────────────
+function stopShow() {
+    running = false;
+    document.getElementById('btnStart').classList.remove('active');
+    document.getElementById('showStatus').textContent = 'pausiert';
+    console.log('⏸ SHOW pausiert');
+}
+
+// ─── TOGGLE START ────────────────────────────────────────────
+function toggleStart() {
+    if (running) {
+        stopShow();
+    } else {
+        startShow();
+    }
 }
 
 // ─── FIGUR WECHSELN ──────────────────────────────────────────
@@ -487,12 +494,14 @@ function nextFigur() {
     currentFigur = FIGUREN[(idx + 1) % FIGUREN.length];
     if (!warb10Active) currentFigur.pulse = 0.5;
     updateShow();
+    console.log(`🎭 Figur: ${currentFigur.name}`);
 }
 
 function randomFigur() {
     currentFigur = FIGUREN[Math.floor(Math.random() * FIGUREN.length)];
     if (!warb10Active) currentFigur.pulse = 0.5;
     updateShow();
+    console.log(`🎭 Figur: ${currentFigur.name}`);
 }
 
 // ─── TOGGLE SHOW ─────────────────────────────────────────────
@@ -500,13 +509,46 @@ function toggleShow() {
     showMode = showMode === 'show' ? 'echo' : 'show';
     document.getElementById('btnShow').textContent = showMode === 'show' ? '∎ω SHOW' : '∎ω ECHO';
     document.getElementById('btnShow').classList.toggle('active');
+    updateShow();
+    console.log(`🔊 Show-Modus: ${showMode}`);
 }
 
+// ─── TOGGLE ECHO ─────────────────────────────────────────────
 function toggleEcho() {
-    const echo = currentEcho || { form: '—', axis: 0, orbit: 0, pulse: 0 };
-    document.getElementById('echoValue').textContent =
-        showMode === 'echo' ? `🔊 ${echo.form} · ${echo.axis}·${echo.orbit}` : `${currentFigur.symbol} · ${currentFigur.form}`;
-    document.getElementById('btnEcho').classList.toggle('active');
+    const btn = document.getElementById('btnEcho');
+    btn.classList.toggle('active');
+    if (btn.classList.contains('active')) {
+        document.getElementById('echoValue').textContent = `🔊 ${currentFigur.form} · ${currentFigur.axis}·${currentFigur.orbit}`;
+        document.getElementById('echoStatus').textContent = `🔊 aktiv`;
+        console.log('🔊 ECHO aktiviert');
+    } else {
+        document.getElementById('echoValue').textContent = `${currentFigur.symbol} · ${currentFigur.form}`;
+        document.getElementById('echoStatus').textContent = `✓ ${currentFigur.form}`;
+        console.log('🔊 ECHO deaktiviert');
+    }
+}
+
+// ─── WARB10 ──────────────────────────────────────────────────
+function toggleWarb10() {
+    warb10Active = !warb10Active;
+    const btn = document.getElementById('btnWarb10');
+    const status = document.getElementById('warbStatus');
+    if (warb10Active) {
+        btn.style.borderColor = '#ffaa00';
+        btn.style.color = '#ffaa00';
+        status.textContent = '⚡ AKTIV';
+        status.style.color = '#ffaa00';
+        currentFigur.pulse = 1.2;
+        console.log('⚡ WARB10 AKTIVIERT');
+    } else {
+        btn.style.borderColor = 'rgba(255,255,255,0.02)';
+        btn.style.color = '#668888';
+        status.textContent = '—';
+        status.style.color = '#445555';
+        currentFigur.pulse = 0.5;
+        console.log('⚡ WARB10 DEAKTIVIERT');
+    }
+    updateShow();
 }
 
 // ─── PROOF ────────────────────────────────────────────────────
@@ -540,26 +582,16 @@ function showProof() {
     document.body.appendChild(proof);
 }
 
-// ─── CONTROLS ─────────────────────────────────────────────────
-document.getElementById('btnStart').addEventListener('click', () => {
-    running = true;
-    document.getElementById('btnStart').classList.add('active');
-    document.getElementById('showStatus').textContent = 'aktiv';
-    renderShow(Date.now());
-});
-
-document.getElementById('btnShow').addEventListener('click', toggleShow);
-document.getElementById('btnEcho').addEventListener('click', toggleEcho);
-document.getElementById('btnFigur').addEventListener('click', nextFigur);
-document.getElementById('btnProof').addEventListener('click', showProof);
-document.getElementById('btnWarb10').addEventListener('click', WARB10);
-
-document.getElementById('btnReset').addEventListener('click', () => {
+// ─── RESET ────────────────────────────────────────────────────
+function resetShow() {
     running = false;
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
     currentFigur = FIGUREN[0];
     showMode = 'show';
     warb10Active = false;
-    warb10Value = 0;
     currentFigur.pulse = 0.5;
     document.getElementById('btnStart').classList.remove('active');
     document.getElementById('btnShow').textContent = '∎ω SHOW';
@@ -569,25 +601,38 @@ document.getElementById('btnReset').addEventListener('click', () => {
     document.getElementById('btnWarb10').style.color = '#668888';
     document.getElementById('warbStatus').textContent = '—';
     document.getElementById('warbStatus').style.color = '#445555';
+    document.getElementById('showStatus').textContent = 'reset';
+    document.getElementById('echoStatus').textContent = 'bereit';
     updateShow();
     setTimeout(() => {
         running = true;
         document.getElementById('btnStart').classList.add('active');
         document.getElementById('showStatus').textContent = 'aktiv';
+        if (animationId) cancelAnimationFrame(animationId);
         renderShow(Date.now());
     }, 300);
-});
+    console.log('⟲ RESET');
+}
+
+// ─── CONTROLS ─────────────────────────────────────────────────
+document.getElementById('btnStart').addEventListener('click', toggleStart);
+document.getElementById('btnShow').addEventListener('click', toggleShow);
+document.getElementById('btnEcho').addEventListener('click', toggleEcho);
+document.getElementById('btnFigur').addEventListener('click', nextFigur);
+document.getElementById('btnProof').addEventListener('click', showProof);
+document.getElementById('btnWarb10').addEventListener('click', toggleWarb10);
+document.getElementById('btnReset').addEventListener('click', resetShow);
 
 // ─── TASTATUR ─────────────────────────────────────────────────
 document.addEventListener('keydown', (e) => {
-    if (e.key === ' ') { e.preventDefault(); document.getElementById('btnStart').click(); }
+    if (e.key === ' ') { e.preventDefault(); toggleStart(); }
     if (e.key === 'f' || e.key === 'F') nextFigur();
     if (e.key === 'r' || e.key === 'R') randomFigur();
-    if (e.key === 's' || e.key === 'S') document.getElementById('btnShow').click();
-    if (e.key === 'e' || e.key === 'E') document.getElementById('btnEcho').click();
-    if (e.key === 'p' || e.key === 'P') document.getElementById('btnProof').click();
-    if (e.key === 'w' || e.key === 'W') document.getElementById('btnWarb10').click();
-    if (e.key === 'x' || e.key === 'X') document.getElementById('btnReset').click();
+    if (e.key === 's' || e.key === 'S') toggleShow();
+    if (e.key === 'e' || e.key === 'E') toggleEcho();
+    if (e.key === 'p' || e.key === 'P') showProof();
+    if (e.key === 'w' || e.key === 'W') toggleWarb10();
+    if (e.key === 'x' || e.key === 'X') resetShow();
 });
 
 // ─── INIT ────────────────────────────────────────────────────
@@ -598,7 +643,7 @@ renderShow(Date.now());
 
 console.log('∎ω SHOW · Abbildung · Echo · Figur · WARB10');
 console.log('🎭 Figur: KREIS');
-console.log('⌨️  Leertaste=Start  f=Figur  r=Zufall  s=SHOW  e=ECHO  p=Proof  w=WARB10  x=Reset');
+console.log('⌨️  Leertaste=Start/Stop  f=Figur  r=Zufall  s=SHOW  e=ECHO  p=Proof  w=WARB10  x=Reset');
 </script>
 
 </body>
