@@ -1,0 +1,31 @@
+// UNI.VEC.RAW.SHOW.MOTOR.6D
+
+MOTOR.SHOW = {
+
+    CORE: (x) => x,
+
+    ECHO: (x) => ({
+        form:   x.form,
+        axis:   x.axis,
+        orbit:  x.orbit,
+        pulse:  x.pulse,
+        layer:  x.layer,
+        symbol: x.symbol,
+        cause:  x.cause,
+        effect: x.effect,
+        time:   x.time
+    }),
+
+    ENGINE: {
+        SPARK:  "AUTO.PULSE",
+        MIRROR: "SHOW(x)",
+        LOOP:   "SHOW(SHOW(x)) = SHOW(x)"
+    },
+
+    ENERGY: {
+        IN:  "AUTO.MOVE",
+        OUT: "SHOW.ECHO"
+    },
+
+    OUTPUT: (x) => MOTOR.SHOW.ECHO(x)
+};
