@@ -1,7 +1,14 @@
-TIEFE_ENGINE = (axis, pol) => {
+# que-metrisch.md
 
-  if (pol === "gluecklich")   axis.wert = +1;
-  if (pol === "ungluecklich") axis.wert = -1;
+## Achsen
+- arbeit
+- frei
+- bildung_gradanteil
 
-  return axis;
-};
+## Polarität
+- +1 = gluecklich
+- -1 = ungluecklich
+
+## que-Metrik
+Die Tiefe einer Achse ergibt sich aus:
+TIEFE = Achse.wert * Polarität
